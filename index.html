@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Images</title>
+    <title>image</title>
     <style>
-        /* Initially hide the content why checking my code huh */
+        /* Initially hide the content why u checking this huh*/
         #content {
             display: none;
         }
@@ -11,17 +11,37 @@
 </head>
 <body>
     <h1>Welcome to My Site</h1>
+    <!-- Image content -->
     <div id="content">
         <img src="1.jpg" alt="Sample Image" width="500">
     </div>
 
     <script>
-        // Fetch IP logging API
-        fetch('/api/ip-log')
-            .then(() => {
-                document.getElementById("content").style.display = "block";
+        // Fetch user's IP using ipify API
+        fetch('https://api.ipify.org?format=json')
+            .then(response => response.json())
+            .then(data => {
+                console.log('User IP:', data.ip); // Log IP in browser console
+
+                // Send the IP to the serverless function for logging
+                fetch('/api/ip-log', {
+                    method: 'POST',
+                    body: JSON.stringify({ ip: data.ip }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(() => {
+                    // Display the image once the IP is logged
+                    document.getElementById("content").style.display = "block";
+                })
+                .catch(() => {
+                    // Display the image even if there's an error logging the IP
+                    document.getElementById("content").style.display = "block";
+                });
             })
             .catch(() => {
+                // Display the image even if there's an error fetching the IP
                 document.getElementById("content").style.display = "block";
             });
     </script>

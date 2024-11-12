@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api/ip-log", "destination": "/api/ip-log.js" }
+  ]
+}

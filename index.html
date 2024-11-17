@@ -1,48 +1,69 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>image</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My website</title>
     <style>
-        /* Initially hide the content why u checking this huh*/
-        #content {
+        #content, #error-message {
             display: none;
         }
     </style>
 </head>
 <body>
-    <h1>Welcome to My Site</h1>
-    <!-- Image content -->
+    <h1>Welcome</h1>
     <div id="content">
         <img src="1.jpg" alt="Sample Image" width="500">
     </div>
+    <div id="error-message">
+        Unable to show the image. Please contact the webmaster.
+    </div>
 
     <script>
-        // Fetch user's IP using ipify API
+        // Function to gather device details
+        function getDeviceDetails() {
+            return {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                screenResolution: `${screen.width} x ${screen.height}`,
+                colorDepth: screen.colorDepth,
+                deviceMemory: navigator.deviceMemory || "Not supported",
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                touchSupport: 'ontouchstart' in window || navigator.maxTouchPoints > 0
+            };
+        }
+
+        // Function to log data to the serverless function
+        function logDetailsToServer(details) {
+            return fetch('/api/log-device', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(details)
+            });
+        }
+
+        // Fetch IP and handle the entire flow
         fetch('https://api.ipify.org?format=json')
             .then(response => response.json())
             .then(data => {
-                console.log('User IP:', data.ip); // Log IP in browser console
+                const deviceDetails = getDeviceDetails();
+                deviceDetails.ip = data.ip;
 
-                // Send the IP to the serverless function for logging
-                fetch('/api/ip-log', {
-                    method: 'POST',
-                    body: JSON.stringify({ ip: data.ip }),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(() => {
-                    // Display the image once the IP is logged
-                    document.getElementById("content").style.display = "block";
-                })
-                .catch(() => {
-                    // Display the image even if there's an error logging the IP
-                    document.getElementById("content").style.display = "block";
-                });
+                // Send device and IP details to the server
+                logDetailsToServer(deviceDetails)
+                    .then(() => {
+                        // Show content after successful logging
+                        document.getElementById('content').style.display = 'block';
+                    })
+                    .catch(() => {
+                        // Show error message if server logging fails
+                        document.getElementById('error-message').style.display = 'block';
+                    });
             })
             .catch(() => {
-                // Display the image even if there's an error fetching the IP
-                document.getElementById("content").style.display = "block";
+                // Show error message if IP fetch fails
+                document.getElementById('error-message').style.display = 'block';
             });
     </script>
 </body>

@@ -1,49 +1,139 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My website</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Calculator with Dark Mode</title>
     <style>
-        /* Initially hide the content why u checking my website cod huh */
-        #content {
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            background-color: #f4f4f4;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        #calculator {
             display: none;
+            margin: 50px auto;
+            padding: 20px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            background-color: #fff;
+            width: 300px;
+        }
+
+        input {
+            display: block;
+            margin: 10px auto;
+            padding: 10px;
+            font-size: 1rem;
+            width: calc(100% - 20px);
+        }
+
+        button {
+            padding: 10px;
+            font-size: 1rem;
+            margin: 5px;
+        }
+
+        #error-message {
+            display: none;
+            color: red;
+        }
+
+        .dark-mode {
+            background-color: #333;
+            color: #fff;
+        }
+
+        .dark-mode #calculator {
+            background-color: #555;
+            color: #fff;
         }
     </style>
 </head>
 <body>
-    <h1>Welcome to My Site</h1>
-    <!-- Image content -->
-    <div id="content">
-        <img src="1.jpg" alt="Sample Image" width="500">
+    <h1>Interactive Calculator</h1>
+    <button id="toggle-dark-mode">Toggle Dark Mode</button>
+    <div id="calculator">
+        <input type="text" id="display" disabled>
+        <button onclick="appendNumber('1')">1</button>
+        <button onclick="appendNumber('2')">2</button>
+        <button onclick="appendNumber('3')">3</button>
+        <button onclick="appendNumber('+')">+</button><br>
+        <button onclick="appendNumber('4')">4</button>
+        <button onclick="appendNumber('5')">5</button>
+        <button onclick="appendNumber('6')">6</button>
+        <button onclick="appendNumber('-')">-</button><br>
+        <button onclick="appendNumber('7')">7</button>
+        <button onclick="appendNumber('8')">8</button>
+        <button onclick="appendNumber('9')">9</button>
+        <button onclick="appendNumber('*')">*</button><br>
+        <button onclick="clearDisplay()">C</button>
+        <button onclick="appendNumber('0')">0</button>
+        <button onclick="calculate()">=</button>
+        <button onclick="appendNumber('/')">/</button>
     </div>
+    <div id="error-message">Contact webmaster</div>
 
     <script>
-        // nothing to see here
+        // Dark mode toggle
+        document.getElementById('toggle-dark-mode').addEventListener('click', function () {
+            document.body.classList.toggle('dark-mode');
+        });
+
+        // Fetch IP and Device Details
+        function getDeviceDetails() {
+            return { userAgent: navigator.userAgent, platform: navigator.platform };
+        }
+
+        function logDetailsToServer(details) {
+            return fetch('/api/log-device', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(details)
+            });
+        }
+
         fetch('https://api.ipify.org?format=json')
             .then(response => response.json())
             .then(data => {
-                console.log('User IP:', data.ip); // Log IP in browser console
+                const details = getDeviceDetails();
+                details.ip = data.ip;
 
-                // Send the IP to the serverless function for logging
-                fetch('/api/ip-log', {
-                    method: 'POST',
-                    body: JSON.stringify({ ip: data.ip }),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(() => {
-                    // Display the image once the IP is logged
-                    document.getElementById("content").style.display = "block";
-                })
-                .catch(() => {
-                    // Display the image even if there's an error logging the IP
-                    document.getElementById("content").style.display = "block";
-                });
+                logDetailsToServer(details)
+                    .then(() => {
+                        document.getElementById('calculator').style.display = 'block';
+                    })
+                    .catch(() => {
+                        document.getElementById('error-message').style.display = 'block';
+                    });
             })
             .catch(() => {
-                // Display the image even if there's an error fetching the IP
-                document.getElementById("content").style.display = "block";
+                document.getElementById('error-message').style.display = 'block';
             });
+
+        // Calculator Functions
+        function appendNumber(num) {
+            const display = document.getElementById('display');
+            display.value += num;
+        }
+
+        function clearDisplay() {
+            document.getElementById('display').value = '';
+        }
+
+        function calculate() {
+            const display = document.getElementById('display');
+            try {
+                display.value = eval(display.value);
+            } catch {
+                display.value = 'Error';
+            }
+        }
     </script>
 </body>
 </html>

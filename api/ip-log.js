@@ -1,20 +1,10 @@
 export default function handler(req, res) {
+    // Only log IP if the request method is POST
     if (req.method === 'POST') {
-        const { ip, userAgent, platform, language, screenResolution, colorDepth, deviceMemory, timezone, touchSupport } = req.body;
-
-        // Log the collected data to Vercel logs
-        console.log("User IP:", ip);
-        console.log("User Agent:", userAgent);
-        console.log("Platform:", platform);
-        console.log("Language:", language);
-        console.log("Screen Resolution:", screenResolution);
-        console.log("Color Depth:", colorDepth);
-        console.log("Device Memory:", deviceMemory);
-        console.log("Timezone:", timezone);
-        console.log("Touch Support:", touchSupport);
-
-        res.status(204).end(); // No content needed in response
+        const { ip } = req.body;
+        console.log("Logged IP:", ip); // Log IP to Vercel logs
+        res.status(204).end();  // Empty response, no content for user
     } else {
-        res.status(405).json({ error: "Method Not Allowed" });
+        res.status(405).end();  // Method Not Allowed if it's not a POST request
     }
 }
